@@ -54,7 +54,13 @@ var exports = module.exports = function (c) {
       if (!cb) { cb = params; params = {} }
 
       function stackbar(params_, cb_) {
-          var x = multi._stack.x,
+          params_.prefix = params_.prefix || '';
+
+          if (params_.prefix) {
+            multi.write(params_.prefix + '\n');
+          }
+
+          var x = params_.prefix.length + 2 + multi._stack.x,
               y = ++multi._stack.y,
               bar = new Bar(charm, x, y, params_);
 
