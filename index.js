@@ -50,6 +50,48 @@ var exports = module.exports = function (c) {
         });
     };
     
+    multi.stack = function (params, cb) {
+      if (!cb) { cb = params; params = {} }
+
+      function stackbar(params_, cb_) {
+          var x = multi._stack.x,
+              y = ++multi._stack.y,
+              bar = new Bar(charm, x, y, params_);
+
+          multi._stack.bars.push(bar);
+          multi.on('offset', function (o) {
+              bar.offset = o;
+          });
+          cb_(bar);
+      }
+
+      if (!this._stack) {
+        multi._stack = {
+            pending: [{ params: params, cb: cb }],
+            bars: []
+        };
+
+        charm.position(function (x, y) {
+            multi._stack.x = x;
+            multi._stack.y = y - 1;
+
+            multi._stack.pending.forEach(function (info) {
+                stackbar(info.params, info.cb);
+            });
+        });
+        return;
+      }
+      else if (!multi._stack.x && !multi._stack.y) {
+        multi._stack.pending.push({
+            params: params,
+            cb: cb
+        });
+        return;
+      }
+
+      stackbar(params, cb);
+    }
+
     multi.charm = charm;
     multi.destroy = charm.destroy.bind(charm);
     
