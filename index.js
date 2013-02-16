@@ -54,17 +54,15 @@ var exports = module.exports = function (c) {
       if (!cb) { cb = params; params = {} }
 
       function stackbar(params_, cb_) {
-          params_.prefix = params_.prefix || '';
-
-          if (params_.prefix) {
-            multi.write(params_.prefix + '\n');
-          }
-
-          var x = params_.prefix.length + 2 + multi._stack.x,
-              y = ++multi._stack.y,
-              bar = new Bar(charm, x, y, params_);
+          var bar = new Bar(
+              charm,
+              multi._stack.x,
+              ++multi._stack.y,
+              params_
+          );
 
           multi._stack.bars.push(bar);
+          bar.offset = multi.offset;
           multi.on('offset', function (o) {
               bar.offset = o;
           });
@@ -84,6 +82,7 @@ var exports = module.exports = function (c) {
             multi._stack.pending.forEach(function (info) {
                 stackbar(info.params, info.cb);
             });
+            multi._stack.pending.length = 0;
         });
         return;
       }
