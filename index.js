@@ -1,5 +1,6 @@
 var charmer = require('charm');
 var Bar = require('./lib/bar');
+var Stack = require('./lib/stack');
 
 var exports = module.exports = function (c) {
     if (c instanceof charmer.Charm) {
@@ -12,6 +13,28 @@ var exports = module.exports = function (c) {
         });
     }
     
+    // Creates a bar or a stack
+    function createBar(x, y, params) {
+      if (params.type === 'stack') {
+          var stack = new Stack(charm, x, y, params);
+          multi.stacks.push(stack);
+          stack.offset = multi.offset;
+          multi.on('offset', function (o) {
+              stack.offset = o;
+          });
+          return stack;
+      }
+
+      var bar = new Bar(charm, x, y, params);
+      multi.bars.push(bar);
+      bar.offset = multi.offset;
+      multi.on('offset', function (o) {
+          bar.offset = o;
+      });
+
+      return bar;
+    }
+
     var multi = function (x, y, params) {
         if (typeof x === 'object') {
             params = x;
@@ -23,15 +46,10 @@ var exports = module.exports = function (c) {
         if (x === undefined) x = '+0';
         if (y === undefined) y = '+0';
         
-        var bar = new Bar(charm, x, y, params);
-        multi.bars.push(bar);
-        bar.offset = multi.offset;
-        multi.on('offset', function (o) {
-            bar.offset = o;
-        });
-        return bar;
+        return createBar(x, y, params);
     };
     multi.bars = [];
+    multi.stacks = [];
     
     multi.rel = function (x, y, params) {
         return multi(x, '-' + y, params);
@@ -41,61 +59,9 @@ var exports = module.exports = function (c) {
         if (!cb) { cb = params; params = {} }
         
         charm.position(function (x, y) {
-            var bar = new Bar(charm, x, y, params);
-            multi.bars.push(bar);
-            multi.on('offset', function (o) {
-                bar.offset = o;
-            });
-            cb(bar);
+            cb(createBar(x, y, params));
         });
     };
-    
-    multi.stack = function (params, cb) {
-      if (!cb) { cb = params; params = {} }
-
-      function stackbar(params_, cb_) {
-          var bar = new Bar(
-              charm,
-              multi._stack.x,
-              ++multi._stack.y,
-              params_
-          );
-
-          multi._stack.bars.push(bar);
-          bar.offset = multi.offset;
-          multi.on('offset', function (o) {
-              bar.offset = o;
-          });
-          cb_(bar);
-      }
-
-      if (!this._stack) {
-        multi._stack = {
-            pending: [{ params: params, cb: cb }],
-            bars: []
-        };
-
-        charm.position(function (x, y) {
-            multi._stack.x = x;
-            multi._stack.y = y - 1;
-
-            multi._stack.pending.forEach(function (info) {
-                stackbar(info.params, info.cb);
-            });
-            multi._stack.pending.length = 0;
-        });
-        return;
-      }
-      else if (!multi._stack.x && !multi._stack.y) {
-        multi._stack.pending.push({
-            params: params,
-            cb: cb
-        });
-        return;
-      }
-
-      stackbar(params, cb);
-    }
 
     multi.charm = charm;
     multi.destroy = charm.destroy.bind(charm);
