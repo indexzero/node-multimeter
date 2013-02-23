@@ -37,7 +37,7 @@ var iv = setInterval(function () {
         stack.lines[s[i]].percent(progress[i]);
         if (p < 100 && progress[i] >= 100) {
             pending--;
-            stack.pop(s[i]);
+            stack.splice(s[i]);
         }
 
         if (pending === 0) {
