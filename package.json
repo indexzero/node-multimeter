@@ -1,7 +1,7 @@
 {
-    "name" : "multimeter",
-    "version" : "0.1.1",
-    "description" : "render multiple progress bars at once on the terminal",
+    "name" : "multimeter-stack",
+    "version" : "0.2.0",
+    "description" : "render multiple progress bars (and stacks) at once on the terminal",
     "main" : "index.js",
     "directories" : {
         "lib" : ".",
@@ -13,7 +13,7 @@
     },
     "repository" : {
         "type" : "git",
-        "url" : "http://github.com/substack/node-multimeter.git"
+        "url" : "http://github.com/indexzero/node-multimeter.git#multimeter-stack"
     },
     "keywords" : [
         "progress",
